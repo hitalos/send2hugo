@@ -1,0 +1,17 @@
+{
+    "port": 8000,
+    "contentFolder": "content",
+    "static_folder": "public",
+    "auth": {
+        "endpoint": "https://192.168.0.1/auth/realms/application-name/protocol/openid-connect/token",
+        "client_id": "application-name",
+        "client_secret": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "jwt_secret": "",
+        "token_duration": 24
+    }
+    "mimetypes": [
+        "application/pdf",
+        "image/png",
+        "image/jpeg"
+    ]
+}
