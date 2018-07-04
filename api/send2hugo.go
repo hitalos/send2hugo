@@ -9,6 +9,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/gosimple/slug"
 	"github.com/hitalos/send2hugo/config"
 	"github.com/labstack/echo"
 )
@@ -23,6 +24,7 @@ func Routes(g *echo.Group, config config.Config) {
 	g.GET("/content/:section", listContents)
 	g.POST("/content/:section", newContent)
 	g.GET("/content/:section/:slug", getContent)
+	g.PUT("/content/:section/:slug", updateContent)
 	g.DELETE("/content/:section/:slug", removeContent)
 	g.POST("/content/:section/:slug/attach", newResource)
 	g.GET("/content/:section/:slug/:attach", getResource)
@@ -72,6 +74,10 @@ func newContent(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("error binding request data: %v", err))
 	}
 	section := c.Param("section")
+	dir := path.Join(configuration.ContentFolder, section, slug.Make(ct.Title))
+	if _, err := os.Stat(dir); err == nil {
+		return echo.NewHTTPError(http.StatusConflict, "content already exists")
+	}
 	data, err := ct.save(section)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -80,6 +86,27 @@ func newContent(c echo.Context) error {
 		return c.Blob(http.StatusCreated, "text/markdown", data)
 	}
 	return c.JSON(http.StatusCreated, ct)
+}
+
+func updateContent(c echo.Context) error {
+	ct := new(content)
+	ct.load(c.Param("section"), c.Param("slug"))
+	originalSlug := ct.Slug
+	if err := c.Bind(ct); err != nil {
+		if err == echo.ErrUnsupportedMediaType {
+			return echo.ErrUnsupportedMediaType
+		}
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("error binding request data: %v", err))
+	}
+	ct.Slug = originalSlug
+	data, err := ct.save(c.Param("section"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	if strings.Contains(c.Request().Header.Get("Accept"), "markdown") {
+		return c.Blob(http.StatusOK, "text/markdown", data)
+	}
+	return c.JSON(http.StatusOK, ct)
 }
 
 func getContent(c echo.Context) error {
