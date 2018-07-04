@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/hitalos/send2hugo/config"
 	"github.com/labstack/echo"
@@ -75,13 +76,20 @@ func newContent(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	return c.Blob(http.StatusCreated, "text/markdown", data)
+	if strings.Contains(c.Request().Header.Get("Accept"), "markdown") {
+		return c.Blob(http.StatusCreated, "text/markdown", data)
+	}
+	return c.JSON(http.StatusCreated, ct)
 }
 
 func getContent(c echo.Context) error {
 	ct := new(content)
 	if err := ct.load(c.Param("section"), c.Param("slug")); err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+	}
+	if strings.Contains(c.Request().Header.Get("Accept"), "markdown") {
+		enc, _ := ct.encode()
+		return c.Blob(http.StatusCreated, "text/markdown", enc)
 	}
 	return c.JSON(http.StatusOK, ct)
 }
