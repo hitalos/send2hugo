@@ -23,10 +23,11 @@ Path                              | Method | Description
 `/content/:section`               | GET                         | List content from section `:section`
 `/content/:section`               | POST <sup>[1](#note1)</sup> | Create a new content into section `:section` (also create the section if not exists)
 `/content/:section/:slug`         | GET <sup>[1](#note1)</sup>  | Get content `:slug` from section `:section`
-`/content/:section/:slug`         | DELETE                      | Remove content `:slug` from section `:section`
-`/content/:section/:slug/attach`  | POST                        | Add resource to content
+`/content/:section/:slug`         | PUT <sup>[1](#note1)</sup>  | Update content (slug property is imutable)
+`/content/:section/:slug`         | DELETE                      | Remove content
+`/content/:section/:slug/attach`  | POST                        | Add resource to content (input field must be called "attach")
 `/content/:section/:slug/:attach` | GET                         | Get resource
-`/content/:section/:slug/:attach` | DELETE                      | Remove resource from content
+`/content/:section/:slug/:attach` | DELETE                      | Discard resource and update respective content
 
 
 <a name="note1">1</a> The default mimetype of response is "`application/json`". If you want markdown, add the header "`Accept: text/markdown`" to your request.

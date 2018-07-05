@@ -116,7 +116,7 @@ func getContent(c echo.Context) error {
 	}
 	if strings.Contains(c.Request().Header.Get("Accept"), "markdown") {
 		enc, _ := ct.encode()
-		return c.Blob(http.StatusCreated, "text/markdown", enc)
+		return c.Blob(http.StatusOK, "text/markdown", enc)
 	}
 	return c.JSON(http.StatusOK, ct)
 }
